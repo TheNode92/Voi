@@ -1,167 +1,200 @@
-<h1 align="center">Voi Network</h1>
+# Celestia Node & Validator kurulumu
 
-> Adım adım gittiğiniz taktirde `sorunsuz` bir kurulum olacaktır.
+[![Go Reference](https://pkg.go.dev/badge/github.com/celestiaorg/celestia-node.svg)](https://pkg.go.dev/github.com/celestiaorg/celestia-node)
+[![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/celestiaorg/celestia-node)](https://github.com/celestiaorg/celestia-node/releases/latest)
+[![test](https://github.com/celestiaorg/celestia-node/actions/workflows/test.yml/badge.svg)](https://github.com/celestiaorg/celestia-node/actions/workflows/test.yml)
+[![lint](https://github.com/celestiaorg/celestia-node/actions/workflows/lint.yml/badge.svg)](https://github.com/celestiaorg/celestia-node/actions/workflows/lint.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/celestiaorg/celestia-node)](https://goreportcard.com/report/github.com/celestiaorg/celestia-node)
+[![codecov](https://codecov.io/gh/celestiaorg/celestia-node/branch/main/graph/badge.svg?token=CWGA4RLDS9)](https://codecov.io/gh/celestiaorg/celestia-node)
 
-> Ayrıca kod blokları arasında bıraktığım `notları` okumanız `SORUNSUZ` kurulum yapmanıza neden olacak.
+![image](https://user-images.githubusercontent.com/101149671/170825153-0af8d236-45b7-4382-9f68-4e544c23f4e1.png)
 
-#
+Celestia Ağındaki Düğüm (Node) Türleri  (`light` | `full` | `bridge`).
 
-> Testnette elde edilen `tüm tokenler` mainnette `ödül olarak` verilir, yani talep ettiğiniz test tokenler bile `önemli`
+Yukarıda açıklanan celestia düğümü türleri, celestia veri kullanılabilirliği (DA) ağını içerir.
 
-> Şu an pek fazla test token elde edmiyoruz, `2 Ekimden` itibaren block proposals edilecek. İsteyen o zaman kurabilir.
+DA ağı, konsensüs ağından gelen blokları dinleyerek ve onları veri kullanılabilirliği örneklemesi (DAS) için sindirilebilir hale getirerek celestia çekirdekli konsensüs ağını sarar.
 
-> Testnet `3 aşamadan` totalde `3 ay` (`minimum`, zamana göre değişebilir) süreceğini belirttiler.
+Detaylı Bilği için [Bknz](https://blog.celestia.org/celestia-mvp-release-data-availability-sampling-light-clients) DAS ve Celestia zincir verilerine nasıl güvenli ve ölçeklenebilir erişim sağladığı hakkında daha fazla bilgi edinmek istiyorsanız.
 
-#
+## Yazılım Gereksinimleri
 
-> ÖNEMLİ LİNKLER: [Duyuru](https://t.me/RuesAnnouncement) - [Chat](https://t.me/RuesChat) - [Discord](https://discord.gg/t7qVBD6m) - [Whitepaper](https://afaf83a4-6c33-4e2a-a40c-9999410c0063.filesusr.com/ugd/7dc173_8e16834f2fbd4866a957d441f392d578.pdf)
+| Gereksinim  | Not            |
+|-------------|----------------|
+| Go Sürümü   | 1.17+          |
 
-<h1 align="center">Donanım ve Güncelleme</h1>
+## Sistem Gereksinimleri 
 
-```console
-# Dökümasyonda fazlası yazsada bu yeterlidir. !!(Ubuntu 20.04e kurdum)!!
-4 CPU 8 RAM 80 SSD - Ubuntu 22.04
-# Benim Tavsiyem Ar-io nodeunuzun yanına kurmanız, ben öyle yaptım ayrı sunucu satın almadım.
-# Ar-io yok diyorsanız başka node olur, ayrı sunucuya gerek yok şimdilik.
+
+Düğüm türü başına sistem gereksinimleri için resmi belgeler sayfasına bakın:
+* [Bridge](https://docs.celestia.org/nodes/bridge-validator-node#hardware-requirements)
+* [Light](https://docs.celestia.org/nodes/light-node#hardware-requirements)
+* [Full](https://docs.celestia.org/nodes/full-node#hardware-requirements)
+
+## Validator Node Kurulumu (Mamaki)
+Mamaki Testnetinde Validator Node kurulumu, Sunucunuza baglanıp adım adım ilerleyin.
+[Explorer](https://celestia.explorers.guru/). 
+
+# Validator Node Gereksinimleri 
+
+|    Bellek   |       Cpu      |      Disk      |   Ağ           |
+|-------------|----------------|----------------|----------------|
+|     8GB     |   Quad-Core    |     250GB      |  1Gbps/100Mbps |
+
+Bunlar Önerilen sistem gereksinimleridir.
+Farklı sistemlerde de çalıştırmayı deneyebilirsiniz. Sunucunuza baglanıp Komutları Sırayla Uygulayın.
+"//" ile başlayan satırlar açıklama satırıdır. Komut degildir.
+Kurulum Ubuntu 20.04 içindir.
+
+# Gerekli Paketlerin kurulumu
+Önce Gerekli Kütüphane ve Güncellemeler ile başlayalım
+```sh
+//Sistem Güncellemesi
+sudo apt update && sudo apt upgrade -y
+sudo apt install curl tar screen wget clang pkg-config libssl-dev jq build-essential \
+git make ncdu -y
+
+//Go Kurulumu
+ver="1.17.2"
+cd $HOME
+wget "https://golang.org/dl/go$ver.linux-amd64.tar.gz"
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf "go$ver.linux-amd64.tar.gz"
+rm "go$ver.linux-amd64.tar.gz"
+echo "export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin" >> $HOME/.bash_profile
+source $HOME/.bash_profile
+
 ```
-
-> Lokasyon olarak kabaca görselde gösterdiğim lokasyonda yer alırsanız üst sıralarda olup daha fazla ödül alabilirsiniz;
-
-![image](https://github.com/ruesandora/Voi/assets/101149671/a4acf712-b470-4ce7-bfb2-7bff3d47580e)
-
-```console
-# Güncellemeler:
-sudo apt update && sudo apt-get upgrade -y
-sudo systemctl start unattended-upgrades && sudo systemctl enable unattended-upgrades
+# Celestia Kurulumu
+```sh
+cd $HOME
+screen -S celestia
+git clone https://github.com/celestiaorg/celestia-app.git
+cd celestia-app/
+APP_VERSION=$(curl -s \
+  https://api.github.com/repos/celestiaorg/celestia-app/releases/latest \
+  | jq -r ".tag_name")
+git checkout tags/$APP_VERSION -b $APP_VERSION
+make install
 ```
+# Node Budama ve Moniker Ayarları
+Node'umuzun gerekli ayarları ile devam edelim
+```sh
+//<node-ismi> kendinize göre güncelleyin
+celestia-appd init <node-ismi> --chain-id mamaki
 
-<h1 align="center">Node Kurulumu</h1>
+//Budama ayarları
+pruning="custom"
+pruning_keep_recent="100"
+pruning_interval="10"
 
-```console
-# Hep Cosmosu yükleyecek değiliz, Algorandı yüklüyoruz:
-sudo apt install -y jq gnupg2 curl software-properties-common
-curl -o - https://releases.algorand.com/key.pub | sudo tee /etc/apt/trusted.gpg.d/algorand.asc
-
-# Çıktısına ENTER diyebilirsiniz.
-sudo add-apt-repository "deb [arch=amd64] https://releases.algorand.com/deb/ stable main"
-
-# Tekrar güncelleyelim ve nodeun otomatik başlamaması için durduralım:
-sudo apt update && sudo apt install -y algorand && echo OK
-sudo systemctl stop algorand && sudo systemctl disable algorand && echo OK
-
-# goal setupı yapalım
-echo -e "\nexport ALGORAND_DATA=/var/lib/algorand/" >> ~/.bashrc && source ~/.bashrc && echo OK
-sudo adduser $(whoami) algorand && echo OK
-
-# yapılandırma işlem:
-sudo algocfg set -p DNSBootstrapID -v "<network>.voi.network" -d /var/lib/algorand/ &&\
-sudo algocfg set -p EnableCatchupFromArchiveServers -v true -d /var/lib/algorand/ &&\
-sudo chown algorand:algorand /var/lib/algorand/config.json &&\
-sudo chmod g+w /var/lib/algorand/config.json &&\
-echo OK
-
-# Genesis
-sudo curl -s -o /var/lib/algorand/genesis.json https://testnet-api.voi.nodly.io/genesis &&\
-sudo chown algorand:algorand /var/lib/algorand/genesis.json &&\
-echo OK
+sed -i -e "s/^pruning *=.*/pruning = \"$pruning\"/" $HOME/.celestia-app/config/app.toml
+sed -i -e "s/^pruning-keep-recent *=.*/pruning-keep-recent = \
+\"$pruning_keep_recent\"/" $HOME/.celestia-app/config/app.toml
+sed -i -e "s/^pruning-interval *=.*/pruning-interval = \
+\"$pruning_interval\"/" $HOME/.celestia-app/config/app.toml
 ```
-
-<h1 align="center">Nodeu çalıştıralım</h1>
-
-```console
-# Algorandı Voi olarak yapılandıralım:
-sudo cp /lib/systemd/system/algorand.service /etc/systemd/system/voi.service &&\
-sudo sed -i 's/Algorand daemon/Voi daemon/g' /etc/systemd/system/voi.service &&\
-echo OK
-
-# ve nodeu çalıştralım:
-sudo systemctl start voi && sudo systemctl enable voi && echo OK
-
-# nodeu kontrrol edelim status ile:
-goal node status
-
-# ==> Genesis ID: voitest-v1
-# ==> Genesis hash: IXnoWtviVVJW5LGivNFc0Dq14V3kqaXuK2u5OQrdVZo=
-# Çıktının sonu bu şekilde olmalı (hash değişebilir)
-
-# Hızlı sync olalım:
-goal node catchup $(curl -s https://testnet-api.voi.nodly.io/v2/status|jq -r '.["last-catchpoint"]') &&\
-echo OK
-# Burada bir kaç dakika bekleyelim
-
-# Yine status yapalım ama bu sefer loglarda Catchpoint göreceğiz:
-goal node status
-
-# Bu komutla kontrol ettiğimizde Sync Timeın sıfırlanmasını ve loglarda Catchpointin gitmesini bekleyelim.
-goal node status -w 1000
-# Yukarda ki şartlar gerçekleince CTRL + C
+# Cüzdan işlemler
+Node'umuza Cüzdan bilgilerini girelim. Yeni cüzdan açacak ise cüzdanınızın kurtarma bilgilerini not edin.
+Faucet Token Almayı unutmayın. [Discord Faucet](https://discord.gg/JeRdw5veKu).
+```sh
+//Yeni Cüzdan için
+celestia-appd keys add <cüzdan-ismi>
+//Eski Cüzdan Geri yükleme
+celestia-appd keys add walletname --recover
 ```
+# Genesis & Peer ayarları
+Node kurulumumuza genesis ve peers ayarları ile devam edelim doğru bir baglantı için önemli.
 
-<h1 align="center">Ödül alabilmek için Telemtry yapalım</h1>
+```sh
+wget -O $HOME/.celestia-app/config/genesis.json "https://raw.githubusercontent.com/celestiaorg/networks/master/mamaki/genesis.json"
 
-```console
-# RuesTest yazan kısmı düzenleyiniz ve tırnakları <> kaldırın
-sudo ALGORAND_DATA=/var/lib/algorand diagcfg telemetry name -n <RuesTest> - RuesCommunity
+BOOTSTRAP_PEERS=$(curl -sL https://raw.githubusercontent.com/celestiaorg/networks/master/mamaki/bootstrap-peers.txt | tr -d '\n') && echo $BOOTSTRAP_PEERS
+sed -i.bak -e "s/^bootstrap-peers *=.*/bootstrap-peers = \"$BOOTSTRAP_PEERS\"/" $HOME/.celestia-app/config/config.toml
 
-sudo ALGORAND_DATA=/var/lib/algorand diagcfg telemetry enable &&\
-sudo systemctl restart voi
+PEERS="7145da826bbf64f06aa4ad296b850fd697a211cc@176.57.189.212:26656, f7b68a491bae4b10dbab09bb3a875781a01274a5@65.108.199.79:20356, 853a9fbb633aed7b6a8c759ba99d1a7674b706a3@38.242.216.151:26656, fbddf6bf8d172a96678cfcd04a887cb54b1fc9b7@70.34.211.176:26656, 96995456b7fe3ab6524fc896dec76d9ba79d420c@212.125.21.178:26656, 268694eaf9446b2052b1161979bf2e09f3e45e81@173.212.254.166:26656, 28aaa8865f3e9bba69f257b08d5c28091b5b3167@176.57.150.79:26656"
+ 
+sed -i.bak -e "s/^persistent-peers *=.*/persistent-peers = \"$PEERS\"/" $HOME/.celestia-app/config/config.toml
+
+sed -i.bak -e "s/^timeout-commit *=.*/timeout-commit = \"25s\"/" $HOME/.celestia-app/config/config.toml
+sed -i.bak -e "s/^skip-timeout-commit *=.*/skip-timeout-commit = false/" $HOME/.celestia-app/config/config.toml
+sed -i.bak -e "s/^mode *=.*/mode = \"validator\"/" $HOME/.celestia-app/config/config.toml
 ```
+# Sistem Dosyası Oluşturma
+Node'umuzun daha sağlıklı çalıştıgına emin olmak için Sistem dosyası oluşturmamız gerek. 
+Bu sayede aksi bir durumda yeniden başlıcaktır.
+```sh
+sudo tee <<EOF >/dev/null /etc/systemd/system/celestia-appd.service
+[Unit]
+Description=celestia-appd Cosmos daemon
+After=network-online.target
 
-<h1 align="center">Cüzdan oluşturma işlemleri</h1>
+[Service]
+User=$USER
+ExecStart=$HOME/go/bin/celestia-appd start
+Restart=on-failure
+RestartSec=3
+LimitNOFILE=4096
 
-```console
-# Cüzdan oluşturalım:
-goal wallet new voi
-# Şifre belirledikten sonra Y diyip 24 kelimenizi alıp saklayın.
-
-# Şimdi cüzdanımızı nodeumuza import edelim:
-goal account import
-# Şifre ve 24 kelimeyi girince bize bir Imported adres verecek bunu saklayalım cüzdan adresimiz.
-
-# Şimdi bu kodları girelim ve bizden Imported adresimizi isteyecek.
-# 1 Kerede kopyala yapıştır yapabilirsiniz bu kodu
-echo -ne "\nEnter your voi address: " && read addr &&\
-echo -ne "\nEnter duration in rounds [press ENTER to accept default (2M)]: " && read duration &&\
-start=$(goal node status | grep "Last committed block:" | cut -d\  -f4) &&\
-duration=${duration:-2000000} &&\
-end=$((start + duration)) &&\
-dilution=$(echo "sqrt($end - $start)" | bc) &&\
-goal account addpartkey -a $addr --roundFirstValid $start --roundLastValid $end --keyDilution $dilution
-# Imported adresinden sonra ki soruda ENTER diyip varsayılanı tercih edebiliriz.
-# Import işleminin tamamlanmasını bekleyin ve Participation IDinizi saklayın.
-
-# Aktifliğimize bakalım, burada çıktı !!OFFLİNE OLMALI!!
-checkonline() {
-  if [ "$addr" == "" ]; then echo -ne "\nEnter your voi address: " && read addr; else echo ""; fi
-  goal account dump -a $addr | jq -r 'if (.onl == 1) then "You are online!" else "You are offline." end'
-}
-checkonline
+[Install]
+WantedBy=multi-user.target
+EOF
 ```
-
-> Bu aşamadan sonrasına devam etmek için discorddan token alın. `node-runners kanalı` => `/voi-testnet-faucet` şeklinde.
-
-> Imported adresiniz ile [Explorerdan](https://voi.observer/explorer/home) kontrol edin token gelince devam edin.
-
-<h1 align="center">Token Aldıktan Sonra</h1>
-
-```console
-# Tokenimizi aldıysak bu komutla !!Online olalım!!
-getaddress() {
-  if [ "$addr" == "" ]; then echo -ne "\nEnter your voi address: " && read addr; else echo ""; fi
-}
-getaddress &&\
-goal account changeonlinestatus -a $addr -o=1 &&\
-sleep 1 &&\
-goal account dump -a $addr | jq -r 'if (.onl == 1) then "You are online!" else "You are offline." end'
+Bu komutdan sonra Servis dosyası oluşacaktır
+```sh
+cat /etc/systemd/system/celestia-appd.service
 ```
+# Node'umuzu Başlatalım
+```sh
+cd $HOME/.celestia-app
+celestia-appd tendermint unsafe-reset-all --home "$HOME/.celestia-app"
+sudo systemctl enable celestia-appd
+sudo systemctl start celestia-appd
+sudo journalctl -u celestia-appd.service -f
+```
+Şuan screen ekranı içerisinde Node'umuzun Çalıştırdık ve Gerçek zamanlı izlemeyi açtık. 
+CTRL+A+D ile Screen'den Çıkabiliriz daha sonra tekrar baglandıgımızda. screen -r ile girebiliriz
 
-![image](https://github.com/ruesandora/Voi/assets/101149671/6b030e34-9619-4191-a136-6312f94ba7cb)
+# Validator oluşturma
+Node başarıyla eşleştikten sonra validatör oluşturmanız gerek.
+```sh
+celestia-appd tx staking create-validator \
+    --amount=<stake-miktarı> \
+    --pubkey=$(celestia-appd tendermint show-validator) \
+    --moniker=MonikerAdi \
+    --chain-id=mamaki \
+    --commission-rate=0.1 \
+    --commission-max-rate=0.2 \
+    --commission-max-change-rate=0.01 \
+    --min-self-delegation=1000000 \
+    --from=<cüzdan-ismi>
+    
+//Örnek Düzenlenmiş komut
+celestia-appd tx staking create-validator \
+    --amount=1000000utia \
+    --pubkey=$(celestia-appd tendermint show-validator) \
+    --moniker=MonikerAdi \
+    --chain-id=mamaki \
+    --commission-rate=0.1 \
+    --commission-max-rate=0.2 \
+    --commission-max-change-rate=0.01 \
+    --min-self-delegation=1000000 \
+    --from=rueswallet
+    
+//Ekstra token Delegate için
+celestia-appd tx staking delegate <validator-adres> 1000000utia --chain-id mamaki --fees=1utia --from <cüzdan-ismi>
+//Jailled olursanız Unjail işlemi için
+celestia-appd tx slashing unjail --from=<cüzdan-ismi> --chain-id mamaki
+
+```
+Düğüm kurma ve gereken donanım gereksinimleri hakkında daha fazla bilgi için şu adresteki Orjinal Belgeleri ziyaret edin: <https://docs.celestia.org>.
+
+Yazı Tamamen Açık kaynaktır. İstediginiz gibi kullanabilirsiniz.
+## API docs
+
+Celestia düğümü genel API'si belgelenmiştir. [oku](https://docs.celestia.org/developers/node-api/).
 
 
-<h1 align="center">Node kurduktan sonra yapılacaklar</h1>
+Daha fazla bilgiyi Burdan bulabilirsiniz [oku](https://github.com/celestiaorg/celestia-node/blob/main/docs/adr/adr-003-march2022-testnet.md#legend).
 
-> Node kurduktan `1-2 gün` sonra `#VoiScout-testnet` kanalında cüzdanınızın ilk 6 hanesini search edin.
 
-> Zaten `online` iseniz doğru ama ek olarak burda gözüküyorsa prop execute etmişsiniz demektir. (iyi bir şey, node calısmıyor anlamına gelmez)
-
-> [Buradan](https://cswenor.github.io/voi-proposer-data/health.html) kendimizi kontrol edelim (`Hour`)
