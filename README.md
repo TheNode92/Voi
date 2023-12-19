@@ -11,7 +11,7 @@
 
 Celestia Ağındaki Düğüm (Node) Türleri  (`light` | `full` | `bridge`).
 
-Yukarıda açıklanan celestia düğümü türleri, celestia veri kullanılabilirliği (DA) ağını içerir.
+Yukarıda açıklanan celestia düğümü türleri, celestia veri kullanılabilirliği (DA) ağını içerir.:
 
 DA ağı, konsensüs ağından gelen blokları dinleyerek ve onları veri kullanılabilirliği örneklemesi (DAS) için sindirilebilir hale getirerek celestia çekirdekli konsensüs ağını sarar.
 
